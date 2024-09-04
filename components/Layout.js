@@ -18,23 +18,7 @@ export default function RootLayout({ children }) {
           }}>
             <h2>Panel boczny</h2>
             <nav>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li>
-                <Link href="/" legacyBehavior>
-                  <a style={{ color: 'white', textDecoration: 'none' }}>Dashboard</a>
-                </Link>
-                </li>
-                <li>
-                  <Link href="/users" legacyBehavior>
-                    <a style={{ color: 'white', textDecoration: 'none' }}>Użytkownicy</a>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/settings" legacyBehavior>
-                    <a style={{ color: 'white', textDecoration: 'none' }}>Ustawienia</a>
-                  </Link>
-                </li>
-              </ul>
+              
             </nav>
           </div>
 
