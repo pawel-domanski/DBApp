@@ -1,39 +1,41 @@
-const { app, BrowserWindow } = require("electron");
-//const serve = require("electron-serve");
-const path = require("path");
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const fs = require('fs');
 
-const appServe = app.isPackaged ? serve({
-  directory: path.join(__dirname, "../out")
-}) : null;
+let mainWindow;
 
-const createWindow = () => {
-  const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1280,
+    height: 800,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js")
-    }
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true, // Dla bezpieczeństwa
+    },
   });
 
-  if (app.isPackaged) {
-    appServe(win).then(() => {
-      win.loadURL("app://-");
-    });
-  } else {
-    win.loadURL("http://localhost:3000");
-    //win.webContents.openDevTools();
-    win.webContents.on("did-fail-load", (e, code, desc) => {
-      win.webContents.reloadIgnoringCache();
-    });
-  }
+  mainWindow.loadURL('http://localhost:3000'); // Ładuje aplikację Next.js
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
 }
 
-app.on("ready", () => {
-    createWindow();
+// IPC do odczytu i zapisu klucza API
+ipcMain.handle('get-api-key', () => {
+  const configPath = path.join(app.getPath('userData'), 'config.json');
+  if (fs.existsSync(configPath)) {
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    return config.OpenAI_API;
+  }
+  return '';
 });
 
-app.on("window-all-closed", () => {
-    if(process.platform !== "darwin"){
-        app.quit();
-    }
+ipcMain.handle('set-api-key', (event, apiKey) => {
+  const configPath = path.join(app.getPath('userData'), 'config.json');
+  const config = { OpenAI_API: apiKey };
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
 });
+
+app.on('ready', createWindow);
